@@ -1,0 +1,7 @@
+alpaca-py
+databricks-sdk
+fastmcp
+sentence-transformers
+starlette
+psycopg2-binary
+sqlalchemy
