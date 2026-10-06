@@ -518,13 +518,13 @@ def get_stock_information(stock_query: str, limit: int = 10, search_chunks: bool
     Returns:
         A dict with query, documents, chunks, and model name
     """
-    if not stock_query or not query.strip():
+    if not stock_query or not stock_query.strip():
         return {"error": "Query text is required"}
     
     try:
         # Compute embedding for the query
         model = get_embedding_model()
-        query_embedding = model.encode(query)
+        query_embedding = model.encode(stock_query)
         
         # Convert to list for JSON serialization and postgres array format
         embedding_list = query_embedding.tolist()
