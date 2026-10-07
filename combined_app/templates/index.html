@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stock Trading Dashboard</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --border: #e4e7ee;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      max-width: 640px;
+      margin: 48px auto;
+      padding: 0 20px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 24px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+    }
+    label:first-child { margin-top: 0; }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.15s ease;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+
+    button {
+      margin-top: 18px;
+      padding: 10px 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s ease;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: translateY(1px); }
+
+    #result {
+      margin-top: 16px;
+      white-space: pre-wrap;
+      background: #f6f6f6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    #result:empty { display: none; }
+
+    table {
+      width: 100%;
+      margin-top: 0;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 600;
+    }
+    tbody tr:hover { background: #fafbfe; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .empty-row td {
+      color: var(--muted);
+      text-align: center;
+      padding: 20px 8px;
+    }
+
+    .delete-btn {
+      margin-top: 0;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+    .delete-btn:hover { background: var(--danger); color: #fff; }
+    .delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .nav-bar { display: flex; gap: 24px; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .nav-bar a { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .nav-bar a:hover { color: var(--accent-hover); }
+    .nav-bar a.active { font-weight: 700; border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
+    .nav-bar .sep { color: var(--border); }
+
+    .dashboard-cards { display: flex; gap: 16px; margin: 16px 0; }
+    .dash-card { flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--card-bg); }
+    .dash-card .label { color: var(--muted); font-size: 0.85rem; }
+    .dash-card .value { font-size: 1.4rem; font-weight: 600; margin-top: 4px; }
+    .pos { color: #0a7a2f; }
+    .neg { color: #b3261e; }
+    .side-BUY { color: #0a7a2f; font-weight: 600; }
+    .side-SELL { color: #b3261e; font-weight: 600; }
+    #refresh-trading { padding: 6px 14px; cursor: pointer; margin-left: 12px; }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="/" class="active">Watchlist</a>
+    <span class="sep">|</span>
+    <a href="#trading">Trading Dashboard</a>
+    <span class="sep">|</span>
+    <a href="/search">Search News &rarr;</a>
+  </div>
+
+  <h1>Stock Watchlist</h1>
+  <p class="hint">Enter a single ticker symbol. This sends exactly ONE call to the Massive API to fetch the latest price, then adds it to your watchlist.</p>
+
+  <div class="card">
+    <form id="stock-form">
+      <label for="symbol">Ticker symbol</label>
+      <input type="text" id="symbol" name="symbol" placeholder="AAPL" required>
+      <button type="submit">Add to watchlist</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <div class="card">
+    <table id="watchlist-table">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Email</th>
+          <th>Latest price</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="watchlist-body"></tbody>
+    </table>
+  </div>
+
+  <div class="card" id="trading">
+    <h2 style="margin-top:0;">Paper Trading Dashboard
+      <button id="refresh-trading">Refresh</button></h2>
+    <p class="hint">Live view of the Alpaca paper account the AI agent trades on. Auto-refreshes every 10s.</p>
+
+    <div class="dashboard-cards">
+      <div class="dash-card"><div class="label">Cash Balance</div><div class="value" id="cash">-</div></div>
+      <div class="dash-card"><div class="label">Market Value</div><div class="value" id="market-value">-</div></div>
+      <div class="dash-card"><div class="label">Total Equity</div><div class="value" id="total-equity">-</div></div>
+    </div>
+
+    <h3>Open Positions</h3>
+    <table>
+      <thead><tr><th>Symbol</th><th>Qty</th><th>Avg Cost</th><th>Last Price</th><th>Market Value</th><th>Unrealized P/L</th></tr></thead>
+      <tbody id="positions-body"></tbody>
+    </table>
+
+    <h3>Recent Orders</h3>
+    <table>
+      <thead><tr><th>Time</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>Notional</th></tr></thead>
+      <tbody id="orders-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById("stock-form");
+    const resultEl = document.getElementById("result");
+    const watchlistBody = document.getElementById("watchlist-body");
+
+    async function loadWatchlist() {
+      try {
+        const resp = await fetch("/watchlist");
+        const data = await resp.json();
+        if (!resp.ok) {
+          resultEl.textContent = "Error loading watchlist: " + (data.error || resp.statusText);
+          return;
+        }
+        watchlistBody.innerHTML = "";
+
+        if (!data.length) {
+          const emptyTr = document.createElement("tr");
+          emptyTr.className = "empty-row";
+          emptyTr.innerHTML = `<td colspan="5">Your watchlist is empty. Add a ticker above to get started.</td>`;
+          watchlistBody.appendChild(emptyTr);
+          return;
+        }
+
+        data.forEach((row) => {
+          const tr = document.createElement("tr");
+          const price = row.latest_price !== null && row.latest_price !== undefined
+            ? Number(row.latest_price).toFixed(2)
+            : "-";
+          const updated = row.updated_at ? new Date(row.updated_at).toLocaleString() : "-";
+          tr.innerHTML = `
+            <td>${row.symbol}</td>
+            <td>${row.email || "-"}</td>
+            <td>${price}</td>
+            <td>${updated}</td>
+            <td><button type="button" class="delete-btn" data-symbol="${row.symbol}">Remove</button></td>
+          `;
+          watchlistBody.appendChild(tr);
+        });
+      } catch (err) {
+        resultEl.textContent = "Failed to load watchlist: " + err;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const symbol = document.getElementById("symbol").value;
+      resultEl.textContent = "Adding to watchlist...";
+
+      try {
+        const resp = await fetch("/watchlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symbol }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          resultEl.textContent = "Error: " + (data.error || resp.statusText);
+          return;
+        }
+        resultEl.textContent = "Added " + data.symbol + " at price " + data.latest_price;
+        document.getElementById("symbol").value = "";
+        loadWatchlist();
+      } catch (err) {
+        resultEl.textContent = "Request failed: " + err;
+      }
+    });
+
+    watchlistBody.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".delete-btn");
+      if (!btn) return;
+
+      const symbol = btn.dataset.symbol;
+      btn.disabled = true;
+      resultEl.textContent = "Removing " + symbol + "...";
+
+      try {
+        const resp = await fetch(`/watchlist/${encodeURIComponent(symbol)}`, {
+          method: "DELETE",
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          resultEl.textContent = "Error: " + (data.error || resp.statusText);
+          btn.disabled = false;
+          return;
+        }
+        resultEl.textContent = "Removed " + data.symbol + " from your watchlist.";
+        loadWatchlist();
+      } catch (err) {
+        resultEl.textContent = "Request failed: " + err;
+        btn.disabled = false;
+      }
+    });
+
+    loadWatchlist();
+
+    // --- Trading dashboard ---
+    const money = (n) => '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    async function refreshTrading() {
+      try {
+        const [account, orders] = await Promise.all([
+          fetch('/api/account').then(r => r.json()),
+          fetch('/api/orders').then(r => r.json()),
+        ]);
+
+        document.getElementById('cash').textContent = account.cash_balance != null ? money(account.cash_balance) : '-';
+        document.getElementById('market-value').textContent = account.market_value != null ? money(account.market_value) : '-';
+        document.getElementById('total-equity').textContent = account.total_equity != null ? money(account.total_equity) : '-';
+
+        const posBody = document.getElementById('positions-body');
+        posBody.innerHTML = '';
+        if (account.positions && account.positions.length) {
+          for (const p of account.positions) {
+            const plClass = p.unrealized_pl >= 0 ? 'pos' : 'neg';
+            posBody.innerHTML += `<tr>
+              <td>${p.symbol}</td><td>${p.quantity}</td><td>${money(p.avg_cost)}</td>
+              <td>${money(p.last_price)}</td><td>${money(p.market_value)}</td>
+              <td class="${plClass}">${money(p.unrealized_pl)}</td>
+            </tr>`;
+          }
+        } else {
+          posBody.innerHTML = '<tr class="empty-row"><td colspan="6">No open positions.</td></tr>';
+        }
+
+        const ordersBody = document.getElementById('orders-body');
+        ordersBody.innerHTML = '';
+        if (orders && orders.length) {
+          for (const o of orders) {
+            ordersBody.innerHTML += `<tr>
+              <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
+              <td>${o.symbol}</td>
+              <td class="side-${o.side}">${o.side}</td><td>${o.quantity}</td>
+              <td>${o.price != null ? money(o.price) : '-'}</td>
+              <td>${o.notional != null ? money(o.notional) : '-'}</td>
+            </tr>`;
+          }
+        } else {
+          ordersBody.innerHTML = '<tr class="empty-row"><td colspan="6">No recent orders.</td></tr>';
+        }
+      } catch (err) {
+        console.error('Trading dashboard error:', err);
+      }
+    }
+
+    document.getElementById('refresh-trading').addEventListener('click', refreshTrading);
+    refreshTrading();
+    setInterval(refreshTrading, 10000);
+  </script>
+</body>
+</html>
