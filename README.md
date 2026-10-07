@@ -4,7 +4,7 @@ Welcome to the **AI Trading Agent App** — an end-to-end AI-powered trading pla
 
 ## Why I Built It
 
-I wanted hands-on experience with the different elements behind production AI agents — understanding how the brain (LLM) decides which tools to call (MCP), how agents interact with external APIs (Alpaca, Massive), and how to build a full-stack system with a database (Lakebase Postgres), backend (MCP server), and frontend (Flask dashboard) that all talk to each other. This project covers the full lifecycle: from ingesting market news and computing vector embeddings, to deploying an AI agent that can place real paper trades, to building a live dashboard that monitors everything.
+I wanted hands-on experience with the different elements behind production AI agents — understanding how the brain (LLM) decides which tools to call (MCP), how agents interact with external APIs (Alpaca, Massive), and how to build a full-stack system with a database (Lakebase Postgres), backend (MCP server), and frontend (Flask dashboard) that all talk to each other. This project covers the full lifecycle- from ingesting market news and computing vector embeddings, to deploying an AI agent that can place real paper trades, to building a live dashboard that monitors everything.
 
 ## Architecture
 
@@ -61,11 +61,11 @@ ai-mcp-stock-trade-app/
 
 This project runs as **3 Databricks Apps**:
 
-| App | Purpose | Status |
+| App | Purpose |
 | --- | --- | --- |
-| `mcp-trading-server` | MCP trading server — AI agent calls its tools to trade | Running |
-| `databricks-day-1` | Combined Flask app — watchlist, trading dashboard, semantic search | Running |
-| `agent-stock-trader` | Agent Bricks AI agent — prompts the MCP server in natural language | Stopped (start on demand) |
+| `mcp-trading-server` | MCP trading server — AI agent calls its tools to trade | 
+| `databricks-day-1` | Combined Flask app — watchlist, trading dashboard, semantic search |
+| `agent-stock-trader` | Agent Bricks AI agent — prompts the MCP server in natural language |
 
 ## What This Project Does
 
