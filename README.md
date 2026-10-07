@@ -62,7 +62,7 @@ ai-mcp-stock-trade-app/
 This project runs as **3 Databricks Apps**:
 
 | App | Purpose |
-| --- | --- | --- |
+
 | `mcp-trading-server` | MCP trading server — AI agent calls its tools to trade | 
 | `databricks-day-1` | Combined Flask app — watchlist, trading dashboard, semantic search |
 | `agent-stock-trader` | Agent Bricks AI agent — prompts the MCP server in natural language |
