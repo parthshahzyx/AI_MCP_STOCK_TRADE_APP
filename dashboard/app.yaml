@@ -2,6 +2,11 @@ command:
   - "python"
   - "app.py"
 
+resources:
+  - name: requirements
+    source:
+      path: ./requirements.txt
+
 env:
   - name: LAKEBASE_SECRET_SCOPE
     value: "database"

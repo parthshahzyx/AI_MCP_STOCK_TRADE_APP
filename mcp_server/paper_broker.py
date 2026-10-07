@@ -36,8 +36,8 @@ DEFAULT_STARTING_CASH = float(os.environ.get("PAPER_STARTING_CASH", "100000"))
 # the simulated random-walk price if the Massive API is unavailable (e.g. no
 # API key configured yet, rate-limited, or a transient network error) - this
 # keeps paper trading usable even without a Massive account.
-_MASSIVE_SECRET_SCOPE = os.environ.get("MASSIVE_SECRET_SCOPE", "database")
-_MASSIVE_SECRET_KEY = os.environ.get("MASSIVE_SECRET_KEY", "massive-api-key")
+_MASSIVE_SECRET_SCOPE = os.environ.get("MASSIVE_SECRET_SCOPE", "massive")
+_MASSIVE_SECRET_KEY = os.environ.get("MASSIVE_SECRET_KEY", "api-key")
 _MASSIVE_BASE_URL = "https://api.massive.com"
 _w = WorkspaceClient()
 
