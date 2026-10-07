@@ -8,8 +8,6 @@ I wanted hands-on experience with the different elements behind production AI ag
 
 ## Architecture
 
-> The full system and data architecture diagram is available as a [draw.io file](architecture.drawio). Open it at [app.diagrams.net](https://app.diagrams.net) to view or edit.
-
 ```
 ai-mcp-stock-trade-app/
 ├── mcp_server/              # MCP trading server (FastMCP + Alpaca API)
@@ -55,7 +53,6 @@ ai-mcp-stock-trade-app/
 │   └── ingest_ticker_news_embeddings_job.yml
 ├── databricks.yml          # DABs bundle config
 ├── setup_secrets.py        # One-time Databricks secret setup
-├── architecture.drawio     # System architecture diagram (draw.io)
 ├── LICENSE
 └── .env.example
 ```
