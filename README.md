@@ -16,13 +16,20 @@ ai-mcp-stock-trade-app/
 │   ├── schema_watchlist.sql  # Watchlist table schema
 │   ├── test_watchlist.py     # Watchlist tool tests
 │   └── app.yaml              # Databricks App deployment config
-├── dashboard/               # Flask web dashboard
-│   ├── app.py                # Trading dashboard + watchlist UI
+├── dashboard/               # Flask web dashboard (paper trading)
+│   ├── app.py                # Trading dashboard + portfolio UI
 │   ├── alpaca_broker.py      # Alpaca API wrapper
 │   ├── paper_broker.py       # Paper trading logic
 │   ├── lakebase.py           # Lakebase Postgres helper
-│   ├── templates/            # HTML templates (index, search)
+│   ├── templates/            # HTML templates (index)
 │   └── app.yaml              # Databricks App deployment config
+├── news_app/                # Flask news watchlist + semantic search
+│   ├── app.py                # Watchlist UI + news sync + semantic search
+│   ├── massive_client.py     # Massive.com API client (news fetching)
+│   ├── lakebase.py           # Lakebase Postgres helper
+│   ├── templates/            # HTML templates (index, search)
+│   ├── app.yaml              # Databricks App deployment config
+│   └── requirements.txt     # Python deps (sentence-transformers, etc.)
 ├── notebooks/              # News ingestion + embeddings pipeline
 │   └── ingest_ticker_news_embeddings  # Fetches news, computes vector embeddings
 ├── sql/                    # Lakebase table setup scripts
@@ -55,10 +62,17 @@ A [FastMCP](https://github.com/jlowin/fastmcp) server that exposes trading tools
 
 Every tool call is traced to the `mcp_traces` table in Lakebase with session tracking via `agent_sessions`, providing full observability of AI agent interactions.
 
-### 2. Flask Dashboard (`dashboard/`)
-A web UI for monitoring your portfolio, viewing watchlists, searching news via semantic similarity, and placing trades. Deployed as a Databricks App with OAuth2 authentication.
+### 2. Paper Trading Dashboard (`dashboard/`)
+A web UI for monitoring a paper-trading portfolio, viewing positions and orders, and tracking what the MCP agent is doing to the Alpaca paper-trading account. Deployed as a Databricks App with OAuth2 authentication.
 
-### 3. News Ingestion + Embeddings Pipeline (`notebooks/` + `sql/`)
+### 3. News Watchlist + Semantic Search (`news_app/`)
+A Flask web app that lets you manage a stock watchlist, sync news from the Massive API into Lakebase, and perform semantic similarity search over news articles using pgvector embeddings. This is the human-facing frontend for the news/embeddings pipeline.
+
+- **Watchlist management** — Add/remove tracked tickers, stored in the `watchlist` table
+- **News sync** — Fetch recent news from Massive API and upsert into `ticker_news_documents`
+- **Semantic search** — Search news articles by meaning (not keywords) using vector similarity over the `ticker_news_embeddings` table
+
+### 4. News Ingestion + Embeddings Pipeline (`notebooks/` + `sql/`)
 A scheduled Databricks notebook that:
 
 1. Reads tracked tickers from the `watchlist` table in Lakebase
@@ -68,6 +82,18 @@ A scheduled Databricks notebook that:
 5. Fetches full article bodies, splits into overlapping chunks, and writes chunk-level embeddings to `ticker_news_chunk_embeddings` for fine-grained RAG retrieval
 
 The job is deployable via Databricks Asset Bundles: `databricks bundle deploy -t dev`
+
+## Project Evolution
+
+This project was built across three iterative phases:
+
+| Phase | Focus | Key additions |
+| --- | --- | --- |
+| **Day 1** | Lakebase + Massive API basics | Flask watchlist app, `massive_client.py`, `lakebase.py` connection helper |
+| **Day 2** | Context engineering / RAG | News ingestion notebook, pgvector embeddings, semantic search UI, DABs scheduling |
+| **Day 3** | MCP trading + observability | FastMCP trading server, Alpaca integration, tool-call tracing, paper-trading dashboard |
+
+Each phase's code is preserved in its respective component directory (`news_app/` for Days 1-2, `mcp_server/` + `dashboard/` for Day 3).
 
 ## Tech Stack
 
@@ -105,19 +131,25 @@ Run the SQL scripts in `sql/` against your Lakebase Postgres database in order:
 
 Also run `mcp_server/schema_tracing.sql` and `mcp_server/schema_watchlist.sql` for the tracing and watchlist tables.
 
-### 3. Deploy the MCP Server
+### 3. Deploy the MCP Trading Server
 ```bash
 cd mcp_server
 databricks apps deploy mcp-trading-server
 ```
 
-### 4. Deploy the Dashboard
+### 4. Deploy the Paper Trading Dashboard
 ```bash
 cd dashboard
 databricks apps deploy trading-dashboard
 ```
 
-### 5. Deploy the News Ingestion Job (optional)
+### 5. Deploy the News Watchlist App
+```bash
+cd news_app
+databricks apps deploy news-watchlist
+```
+
+### 6. Deploy the News Ingestion Job (optional)
 ```bash
 databricks bundle deploy -t dev
 databricks bundle run ingest_ticker_news_embeddings_job -t dev
